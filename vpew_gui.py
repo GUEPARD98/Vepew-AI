@@ -413,7 +413,7 @@ Espacio Libre: {host_info.get('disk_free_gb', 'N/A')} GB"""
             def run_cycle():
                 try:
                     result = subprocess.run([
-                        'python', 'run_vpew_agent_fixed.py'
+                        'python', 'vpew_real.py'
                     ], input='1\n', capture_output=True, text=True, timeout=30)
                     
                     if result.returncode == 0:
