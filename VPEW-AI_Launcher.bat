@@ -32,8 +32,8 @@ if not exist "C:\ProgramData\vpew-ai\venv\Scripts\python.exe" (
 echo [INFO] Iniciando VPEW-AI GUI...
 echo [INFO] Presione Ctrl+C para cerrar
 
-REM Ejecutar GUI
-python vpew_gui.py
+REM Ejecutar VPEW-AI Main
+python vpew_main.py
 
 echo.
 echo [INFO] VPEW-AI GUI cerrado
