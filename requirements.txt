@@ -1,0 +1,36 @@
+# VPEW-AI Dependencies
+# Core Python packages
+psutil>=5.9.0
+requests>=2.28.0
+cryptography>=3.4.8
+pywin32>=304
+pyyaml>=6.0
+
+# Machine Learning
+tensorflow>=2.10.0
+scikit-learn>=1.1.0
+numpy>=1.21.0
+pandas>=1.5.0
+
+# Parsing and Processing
+pyparsing>=3.0.0
+lxml>=4.9.0
+
+# Logging and Monitoring
+structlog>=22.1.0
+prometheus-client>=0.14.0
+
+# Network and Security
+urllib3>=1.26.0
+certifi>=2022.0.0
+
+# Windows Specific
+wmi>=1.5.1
+pypiwin32>=223
+
+# Development and Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+flake8>=5.0.0
+mypy>=0.991

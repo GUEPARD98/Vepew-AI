@@ -1,0 +1,12 @@
+Configura y ejecuta el proyecto VPEW-AI en Windows de forma dinámica. 
+Tareas mínimas:
+1. Crear/usar un virtualenv en %PROGRAMDATA%\vpew-ai\venv.
+2. Instalar dependencias desde requirements.txt o pyproject.toml.
+3. Detectar entorno: versión de Windows, CPU/GPU, RAM, permisos admin.
+4. Ajustar automáticamente config.json (inference_mode = edge si hay GPU, backend si recursos bajos).
+5. Si Sysmon no está instalado, marcar en validation_report como pendiente (no instalar sin permiso).
+6. Crear servicio Windows VPEWAgent que ejecute el agente desde el venv.
+7. Generar validation_report.json con: host_info, dependencias, service_status, sysmon_installed, errores, recomendaciones.
+8. Entregar rutas de logs y confirmación de instalación.
+
+Responde únicamente con el install.log resumido y el validation_report.json resultante.

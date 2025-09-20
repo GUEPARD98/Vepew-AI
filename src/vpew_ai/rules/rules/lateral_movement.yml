@@ -1,0 +1,57 @@
+title: Suspicious Outbound C2 Communication
+id: vpew-r4-lateral-movement
+description: Detects potential command and control communication patterns
+status: experimental
+author: VPEW-AI Team
+date: 2024/01/01
+modified: 2024/01/01
+references:
+    - https://attack.mitre.org/techniques/T1071/001/
+    - https://attack.mitre.org/techniques/T1090/
+tags:
+    - attack.command_and_control
+    - attack.t1071.001
+    - attack.t1090
+logsource:
+    category: network_connection
+    product: windows
+    service: sysmon
+detection:
+    selection:
+        EventID: 3
+        Initiated: 'true'
+        Protocol: 'tcp'
+        DestinationPort:
+            - 443
+            - 80
+            - 8080
+            - 8443
+            - 4443
+    filter_browsers:
+        Image|endswith:
+            - '\chrome.exe'
+            - '\firefox.exe'
+            - '\iexplore.exe'
+            - '\msedge.exe'
+    filter_updates:
+        Image|contains:
+            - '\Windows\System32\'
+            - '\Program Files\Windows NT\'
+        DestinationHostname|contains:
+            - 'microsoft.com'
+            - 'windows.com'
+            - 'windowsupdate.com'
+    suspicious_processes:
+        Image|endswith:
+            - '\powershell.exe'
+            - '\cmd.exe'
+            - '\rundll32.exe'
+            - '\regsvr32.exe'
+            - '\wscript.exe'
+            - '\cscript.exe'
+    condition: (selection and not filter_browsers and not filter_updates) or (selection and suspicious_processes)
+level: medium
+falsepositives:
+    - Legitimate software updates
+    - Cloud synchronization services
+    - Remote management tools

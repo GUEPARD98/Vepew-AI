@@ -1,0 +1,46 @@
+title: Sequential Network Reconnaissance Commands
+id: vpew-r1-reconnaissance
+description: Detects sequential execution of network reconnaissance commands indicating potential network enumeration
+status: experimental
+author: VPEW-AI Team
+date: 2024/01/01
+modified: 2024/01/01
+references:
+    - https://attack.mitre.org/techniques/T1018/
+    - https://attack.mitre.org/techniques/T1057/
+tags:
+    - attack.discovery
+    - attack.t1018
+    - attack.t1057
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith:
+            - '\net.exe'
+            - '\netstat.exe'
+            - '\nslookup.exe'
+            - '\ping.exe'
+            - '\arp.exe'
+            - '\whoami.exe'
+            - '\ipconfig.exe'
+            - '\systeminfo.exe'
+        CommandLine|contains:
+            - 'net view'
+            - 'net user'
+            - 'net group'
+            - 'net localgroup'
+            - 'netstat -an'
+            - 'nslookup'
+            - 'ping -t'
+            - 'arp -a'
+            - 'whoami /all'
+            - 'ipconfig /all'
+    timeframe: 60s
+    condition: selection | count() > 3
+level: medium
+falsepositives:
+    - Legitimate network troubleshooting
+    - System administration tasks
+    - Automated monitoring scripts

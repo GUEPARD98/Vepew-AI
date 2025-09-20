@@ -1,0 +1,61 @@
+[project]
+name = "VPEW-AI"
+description = "Vigilancia Proactiva para Endpoints Windows con IA"
+version = "0.1.0"
+authors = [{name = "Equipo SOC", email = "soc@empresa.com"}]
+license = "Proprietary"
+requires-python = ">=3.10"
+
+[project.dependencies]
+psutil = "*"
+tensorflow = "*"
+scikit-learn = "*"
+pyparsing = "*"
+requests = "*"
+pywin32 = "*"
+cryptography = "*"
+
+[tool.vpewai.context]
+scope = "Protección defensiva para 500 endpoints Windows 10/11 y Server 2016–2019"
+principles = ["Planificar", "Prevenir", "Detectar", "Responder", "Mejorar"]
+languages = ["Python", "C/C++"]
+libraries = ["Win32 API", "WMI", "psutil", "TensorFlow/Keras", "Scikit-Learn", "PyParsing", "logging"]
+
+[tool.vpewai.phases]
+reconocimiento = { attacker_goal = "Enumerar red y usuarios", defenses = ["Monitoreo de comandos de red", "Correlación Sysmon"], telemetry = ["Sysmon EventID 1", "EventID 4624"] }
+acceso = { attacker_goal = "Obtener credenciales", defenses = ["Monitoreo de LSASS", "Alertas de SAM dump"], telemetry = ["EventID 4625", "Sysmon EventID 10"] }
+persistencia = { attacker_goal = "Mantener acceso", defenses = ["Monitoreo de creación de servicios", "Integridad de binarios"], telemetry = ["EventID 4697", "Sysmon EventID 13"] }
+lateral = { attacker_goal = "Expandir control", defenses = ["Alertas de autenticaciones remotas", "Bloqueo PowerShell sospechoso"], telemetry = ["EventID 4624", "Sysmon EventID 3"] }
+cleanup = { attacker_goal = "Borrar rastros", defenses = ["Monitoreo de borrado de logs"], telemetry = ["EventID 1102"] }
+
+[tool.vpewai.architecture]
+modules = ["Sensor", "Backend", "Motor de Reglas/ML", "Consola"]
+communication = "TLS 1.2+ con mTLS y PKI"
+backend = "SOF-ELK o SIEM corporativo"
+
+[tool.vpewai.sigma_rules]
+rules = ["R1: Comandos de red secuenciales", "R2: Acceso a SAM/LSASS", "R3: Alteración de binarios", "R4: Conexiones C2", "R5: Autenticaciones masivas"]
+
+[tool.vpewai.project_structure]
+modules = ["init_agent", "collect_events", "send_to_backend", "rule_engine"]
+example_language = "Python"
+note = "Esqueleto defensivo sin payloads, incluye recolección de eventos vía WMI/Sysmon, análisis ML, reglas Sigma y comunicación TLS."
+
+[tool.vpewai.testing]
+cases = ["Escaneo de red", "Extracción de credenciales", "Persistencia con servicios", "Evasión AV/EDR", "Hardening validado", "Intento de borrar logs", "Validación defensiva", "Evasión blackbox"]
+playbooks = ["PB1: Integridad binaria comprometida", "PB2: Extracción de credenciales", "PB3: Reconocimiento anómalo"]
+
+[tool.vpewai.metrics]
+latency_detection = "<2s"
+log_retention = ">90 días"
+false_positives = "<1%"
+coverage_mitre_attack = ">=80%"
+
+[tool.vpewai.deployment_roadmap]
+lab = {duration = "4w", tasks = ["Hardening", "Sysmon config", "Entrenamiento ML base"]}
+pilot = {duration = "6w", scope = "20 endpoints", tasks = ["Validación en campo", "Optimización reglas Sigma", "Pruebas de carga"]}
+production = {duration = "8w", scope = "480 endpoints", tasks = ["Despliegue masivo", "Integración SIEM", "Capacitación SOC"]}
+operation = {duration = "Trimestral", tasks = ["Reentrenamiento ML", "Ajuste métricas", "Revisión ATT&CK"]}
+
+[tool.vpewai.legal]
+disclaimer = "Uso exclusivo en defensa. No ejecuta exploits ni payloads ofensivos. Requiere conformidad legal y política corporativa."
