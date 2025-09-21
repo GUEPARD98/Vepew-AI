@@ -14,16 +14,63 @@ from typing import Dict, List, Optional
 from dataclasses import dataclass
 from pathlib import Path
 
-import psutil
-import yaml
-from cryptography.fernet import Fernet
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+    psutil = None
 
-from .collectors import EventCollector, SysmonCollector, ETWCollector
-from .processors import FeatureExtractor
+try:
+    import yaml
+    YAML_AVAILABLE = True
+except ImportError:
+    YAML_AVAILABLE = False
+    yaml = None
+
+try:
+    from cryptography.fernet import Fernet
+    CRYPTO_AVAILABLE = True
+except ImportError:
+    CRYPTO_AVAILABLE = False
+    Fernet = None
+
+try:
+    from .collectors import EventCollector, SysmonCollector, ETWCollector
+    COLLECTORS_AVAILABLE = True
+except ImportError:
+    COLLECTORS_AVAILABLE = False
+    EventCollector = SysmonCollector = ETWCollector = None
+
+try:
+    from .processors import FeatureExtractor
+    PROCESSORS_AVAILABLE = True
+except ImportError:
+    PROCESSORS_AVAILABLE = False
+    FeatureExtractor = None
+
 from ..ml import AnomalyDetector, ThreatClassifier
-from ..rules import SigmaEngine
-from ..communication import SecureChannel
-from ..response import PlaybookEngine
+
+try:
+    from ..rules import SigmaEngine
+    RULES_AVAILABLE = True
+except ImportError:
+    RULES_AVAILABLE = False
+    SigmaEngine = None
+
+try:
+    from ..communication import SecureChannel
+    COMMUNICATION_AVAILABLE = True
+except ImportError:
+    COMMUNICATION_AVAILABLE = False
+    SecureChannel = None
+
+try:
+    from ..response import PlaybookEngine
+    RESPONSE_AVAILABLE = True
+except ImportError:
+    RESPONSE_AVAILABLE = False
+    PlaybookEngine = None
 
 # Configure logging
 logging.basicConfig(

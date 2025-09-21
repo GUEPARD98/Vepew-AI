@@ -47,35 +47,161 @@ class VPEWRealAgent:
         self.base_path = base_path
         self.running = False
         
+        # Initialize ML models
+        self.ml_enabled = False
+        self.anomaly_detector = None
+        self.threat_classifier = None
+        self._initialize_ml_models()
+        
         # Estadísticas reales
         self.stats = {
             'events_collected': 0,
             'processes_monitored': 0,
             'threats_detected': 0,
+            'ml_predictions': 0,
             'start_time': time.time()
         }
         
-        # Patrones de amenazas reales
+        # Patrones de amenazas reales expandidos
         self.threat_indicators = {
             'credential_access': [
                 'mimikatz', 'sekurlsa', 'logonpasswords', 'lsass',
-                'procdump', 'comsvcs.dll', 'rundll32'
+                'procdump', 'comsvcs.dll', 'rundll32', 'ntdsutil',
+                'vssadmin', 'reg save', 'sam', 'system', 'security'
             ],
             'reconnaissance': [
                 'net user', 'net group', 'whoami', 'systeminfo',
-                'ipconfig', 'tasklist', 'qwinsta', 'query'
+                'ipconfig', 'tasklist', 'qwinsta', 'query', 'ping',
+                'nslookup', 'arp', 'netstat', 'nltest', 'dsquery'
             ],
             'suspicious_processes': [
                 'powershell.exe', 'cmd.exe', 'wscript.exe', 'cscript.exe',
-                'mshta.exe', 'rundll32.exe', 'regsvr32.exe'
+                'mshta.exe', 'rundll32.exe', 'regsvr32.exe', 'bitsadmin.exe',
+                'certutil.exe', 'msiexec.exe', 'installutil.exe', 'regasm.exe'
+            ],
+            'persistence_indicators': [
+                'schtasks', 'at.exe', 'sc create', 'sc config', 'reg add',
+                'startup', 'autorun', 'winlogon', 'userinit', 'shell'
+            ],
+            'lateral_movement': [
+                'wmic', 'psexec', 'net use', 'net share', 'admin$',
+                'c$', 'ipc$', 'rdp', 'ssh', 'telnet', 'ftp'
+            ],
+            'defense_evasion': [
+                'taskkill', 'sc stop', 'net stop', 'disable', 'uninstall',
+                'delete', 'clear', 'wevtutil', 'fsutil', 'cipher'
             ],
             'suspicious_locations': [
-                'temp', 'appdata', 'public', 'downloads', 'desktop'
+                'temp', 'appdata', 'public', 'downloads', 'desktop',
+                'programdata', 'recycler', 'system32', 'syswow64'
             ]
         }
         
-        logger.info("VPEW Real Agent iniciado")
-        print("VPEW Real Agent iniciado - Monitoreo real de Windows")
+        logger.info(f"VPEW Real Agent iniciado - ML habilitado: {self.ml_enabled}")
+        print(f"VPEW Real Agent iniciado - Monitoreo real de Windows (ML: {'Activado' if self.ml_enabled else 'Desactivado'})")
+    
+    def _initialize_ml_models(self):
+        """Inicializar modelos de ML si están disponibles"""
+        try:
+            import sys
+            sys.path.append('src')
+            from vpew_ai.ml import AnomalyDetector, ThreatClassifier
+            
+            # Check if models exist
+            models_path = Path('models')
+            anomaly_model_path = models_path / 'anomaly_detector.keras'
+            classifier_model_path = models_path / 'threat_classifier.keras'
+            
+            if anomaly_model_path.exists() and classifier_model_path.exists():
+                self.anomaly_detector = AnomalyDetector(model_path=str(anomaly_model_path))
+                self.threat_classifier = ThreatClassifier(model_path=str(classifier_model_path))
+                
+                # Load models
+                self.anomaly_detector.load_model()
+                self.threat_classifier.load_model()
+                
+                self.ml_enabled = True
+                logger.info("ML models loaded successfully")
+            else:
+                # Create and train models if they don't exist
+                logger.info("ML models not found, creating new ones...")
+                self._create_and_train_models()
+                
+        except Exception as e:
+            logger.warning(f"ML models not available, using rule-based detection only: {e}")
+            self.ml_enabled = False
+    
+    def _create_and_train_models(self):
+        """Crear y entrenar modelos ML básicos"""
+        try:
+            from vpew_ai.ml import AnomalyDetector, ThreatClassifier
+            from vpew_ai.ml.training import Trainer
+            
+            # Create models directory
+            models_path = Path('models')
+            models_path.mkdir(exist_ok=True)
+            
+            # Initialize trainer
+            trainer = Trainer(str(models_path))
+            
+            # Train models with minimal epochs for quick setup
+            print("Creando y entrenando modelos ML... (esto puede tardar unos minutos)")
+            results = trainer.train_all_models(epochs=10)
+            
+            if results['anomaly_detector'] and results['threat_classifier']:
+                self.anomaly_detector = trainer.anomaly_detector
+                self.threat_classifier = trainer.threat_classifier
+                self.ml_enabled = True
+                logger.info("ML models created and trained successfully")
+                print("Modelos ML creados y entrenados exitosamente")
+            else:
+                logger.error("Failed to create ML models")
+                self.ml_enabled = False
+                
+        except Exception as e:
+            logger.error(f"Error creating ML models: {e}")
+            self.ml_enabled = False
+    
+    def _extract_features_from_process(self, process_data):
+        """Extraer características para ML del proceso"""
+        try:
+            features = [0.0] * 25  # 25 features como en la arquitectura
+            
+            name = process_data.get('name', '').lower()
+            cmdline = process_data.get('cmdline', '').lower()
+            
+            # Feature 0-4: Indicadores de procesos sospechosos
+            for i, susp_proc in enumerate(self.threat_indicators['suspicious_processes'][:5]):
+                if susp_proc in name:
+                    features[i] = 1.0
+            
+            # Feature 5-9: Indicadores de acceso a credenciales
+            for i, cred_ind in enumerate(self.threat_indicators['credential_access'][:5]):
+                if cred_ind in cmdline:
+                    features[5 + i] = 1.0
+            
+            # Feature 10-14: Indicadores de reconocimiento
+            for i, recon_ind in enumerate(self.threat_indicators['reconnaissance'][:5]):
+                if recon_ind in cmdline:
+                    features[10 + i] = 1.0
+            
+            # Feature 15-19: Indicadores de persistencia
+            for i, pers_ind in enumerate(self.threat_indicators['persistence_indicators'][:5]):
+                if pers_ind in cmdline:
+                    features[15 + i] = 1.0
+            
+            # Feature 20-24: Características generales
+            features[20] = min(1.0, len(cmdline) / 1000.0)  # Longitud de comando normalizada
+            features[21] = float('powershell' in name)
+            features[22] = float('cmd' in name)
+            features[23] = float(any(loc in cmdline for loc in self.threat_indicators['suspicious_locations']))
+            features[24] = float(any(ext in cmdline for ext in ['.exe', '.bat', '.cmd', '.ps1', '.vbs']))
+            
+            return features
+            
+        except Exception as e:
+            logger.error(f"Error extracting features: {e}")
+            return [0.0] * 25
     
     def collect_real_processes(self):
         """Recolectar procesos reales del sistema Windows"""
@@ -168,44 +294,102 @@ class VPEWRealAgent:
             return []
     
     def analyze_real_process(self, process_data):
-        """Analizar proceso real para detectar amenazas"""
+        """Analizar proceso real para detectar amenazas con ML y reglas"""
         threats_found = []
         risk_score = 0.0
+        ml_results = {}
         
         name = process_data['name'].lower()
         cmdline = process_data['cmdline'].lower()
         
+        # ML ANALYSIS (if available)
+        if self.ml_enabled and self.anomaly_detector and self.threat_classifier:
+            try:
+                # Extract features for ML models
+                features = self._extract_features_from_process(process_data)
+                
+                # Anomaly detection
+                anomaly_score = self.anomaly_detector.predict(features)
+                
+                # Threat classification
+                threat_result = self.threat_classifier.predict(features)
+                
+                ml_results = {
+                    'anomaly_score': anomaly_score,
+                    'threat_class': threat_result['class'],
+                    'threat_confidence': threat_result['confidence'],
+                    'threat_probabilities': threat_result['probabilities']
+                }
+                
+                # Add ML-based risk to overall score
+                if anomaly_score > 0.7:
+                    threats_found.append(f"ML: Alta anomalía detectada (score: {anomaly_score:.3f})")
+                    risk_score += anomaly_score * 0.8
+                
+                if threat_result['class'] != 'BENIGN' and threat_result['confidence'] > 0.5:
+                    threats_found.append(f"ML: Amenaza clasificada como {threat_result['class']} (confianza: {threat_result['confidence']:.3f})")
+                    risk_score += threat_result['confidence'] * 0.9
+                
+                self.stats['ml_predictions'] += 1
+                
+            except Exception as e:
+                logger.error(f"Error in ML analysis: {e}")
+                ml_results = {'error': str(e)}
+        
+        # RULE-BASED ANALYSIS (enhanced)
+        
         # 1. DETECCIÓN DE PROCESOS SOSPECHOSOS
         if any(susp in name for susp in self.threat_indicators['suspicious_processes']):
             if 'powershell' in name and ('-enc' in cmdline or '-e ' in cmdline):
-                threats_found.append("PowerShell con comando codificado detectado")
+                threats_found.append("REGLA: PowerShell con comando codificado detectado")
                 risk_score += 0.8
             elif 'cmd' in name and len(cmdline) > 100:
-                threats_found.append("CMD con comando largo detectado")
+                threats_found.append("REGLA: CMD con comando largo detectado")
                 risk_score += 0.5
+            elif 'rundll32' in name and len(cmdline) > 50:
+                threats_found.append("REGLA: RunDLL32 con parámetros sospechosos")
+                risk_score += 0.7
         
         # 2. DETECCIÓN DE COMANDOS DE RECONOCIMIENTO
         recon_found = [cmd for cmd in self.threat_indicators['reconnaissance'] if cmd in cmdline]
         if recon_found:
-            threats_found.append(f"Comandos de reconocimiento: {', '.join(recon_found)}")
-            risk_score += 0.6
+            threats_found.append(f"REGLA: Comandos de reconocimiento: {', '.join(recon_found)}")
+            risk_score += min(0.6, len(recon_found) * 0.2)
         
         # 3. DETECCIÓN DE ACCESO A CREDENCIALES
         cred_found = [cred for cred in self.threat_indicators['credential_access'] if cred in cmdline]
         if cred_found:
-            threats_found.append(f"Indicadores de acceso a credenciales: {', '.join(cred_found)}")
-            risk_score += 0.9
+            threats_found.append(f"REGLA: Indicadores de acceso a credenciales: {', '.join(cred_found)}")
+            risk_score += min(0.9, len(cred_found) * 0.3)
         
-        # 4. ANÁLISIS DE UBICACIÓN
+        # 4. DETECCIÓN DE PERSISTENCIA
+        persist_found = [pers for pers in self.threat_indicators['persistence_indicators'] if pers in cmdline]
+        if persist_found:
+            threats_found.append(f"REGLA: Indicadores de persistencia: {', '.join(persist_found)}")
+            risk_score += min(0.7, len(persist_found) * 0.25)
+        
+        # 5. DETECCIÓN DE MOVIMIENTO LATERAL
+        lateral_found = [lat for lat in self.threat_indicators['lateral_movement'] if lat in cmdline]
+        if lateral_found:
+            threats_found.append(f"REGLA: Indicadores de movimiento lateral: {', '.join(lateral_found)}")
+            risk_score += min(0.8, len(lateral_found) * 0.3)
+        
+        # 6. DETECCIÓN DE EVASIÓN DE DEFENSAS
+        evasion_found = [eva for eva in self.threat_indicators['defense_evasion'] if eva in cmdline]
+        if evasion_found:
+            threats_found.append(f"REGLA: Indicadores de evasión de defensas: {', '.join(evasion_found)}")
+            risk_score += min(0.6, len(evasion_found) * 0.2)
+        
+        # 7. ANÁLISIS DE UBICACIÓN
         process_path = process_data.get('cmdline', '')
         if any(loc in process_path.lower() for loc in self.threat_indicators['suspicious_locations']):
-            threats_found.append("Proceso ejecutándose desde ubicación sospechosa")
+            threats_found.append("REGLA: Proceso ejecutándose desde ubicación sospechosa")
             risk_score += 0.4
         
-        # 5. ANÁLISIS DE ENTROPÍA (detección de ofuscación)
+        # 8. ANÁLISIS DE ENTROPÍA (detección de ofuscación)
         entropy = self._calculate_entropy(cmdline)
         if entropy > 4.5:
-            threats_found.append(f"Alta entropía en comando ({entropy:.2f}) - posible ofuscación")
+            threats_found.append(f"REGLA: Alta entropía en comando ({entropy:.2f}) - posible ofuscación")
             risk_score += 0.5
         
         return {
@@ -213,6 +397,7 @@ class VPEWRealAgent:
             'threats_found': threats_found,
             'risk_score': min(risk_score, 1.0),
             'is_threat': risk_score > 0.6,
+            'ml_results': ml_results,
             'analysis_time': time.time()
         }
     

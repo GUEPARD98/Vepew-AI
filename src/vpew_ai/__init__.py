@@ -2,16 +2,34 @@
 VPEW-AI Core Package
 """
 
-from .sensor import Agent
+# Core ML functionality is always available
 from .ml import AnomalyDetector, ThreatClassifier
-from .rules import SigmaEngine
-from .backend import APIServer
-from .communication import SecureChannel
+
+# Optional imports with fallbacks
+try:
+    from .sensor import Agent
+except ImportError:
+    Agent = None
+
+try:
+    from .rules import SigmaEngine
+except ImportError:
+    SigmaEngine = None
+
+try:
+    from .backend import APIServer
+except ImportError:
+    APIServer = None
+
+try:
+    from .communication import SecureChannel
+except ImportError:
+    SecureChannel = None
 
 __all__ = [
-    "Agent",
     "AnomalyDetector", 
     "ThreatClassifier",
+    "Agent",
     "SigmaEngine",
     "APIServer",
     "SecureChannel"
