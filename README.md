@@ -91,6 +91,92 @@ VPEW-AI_Launcher.bat
 
 ## 📖 Manual de Uso Completo
 
+### 🚀 Inicio Rápido del Agente Principal
+
+#### Ejecutar Agente con Todas las Mejoras
+
+```bash
+# Ejecutar agente completo con todas las mejoras
+C:\ProgramData\vpew-ai\venv\Scripts\python.exe run_agent.py C:\ProgramData\vpew-ai\config.json
+```
+
+#### Estado de Inicialización del Agente
+
+Al ejecutar el comando anterior, verás el siguiente proceso de inicialización:
+
+```
+2025-09-22 02:33:37,969 - vpew_ai.sensor.agent - INFO - Initializing VPEW-AI Agent v0.1.0
+2025-09-22 02:33:37,969 - vpew.agent - INFO - {"timestamp": "2025-09-22T07:33:37.969340", "level": "INFO", "message": "Structured logging initialized", "data": {"component": "agent"}}
+2025-09-22 02:33:37,979 - vpew_ai.sensor.agent - INFO - Dynamic configuration initialized
+2025-09-22 02:33:37,990 - vpew_ai.sensor.agent - INFO - Metrics collection initialized
+2025-09-22 02:33:37,990 - vpew_ai.utils.health_monitor - INFO - Health monitoring system initialized
+```
+
+#### Componentes Inicializados Automáticamente
+
+**✅ 1. Sistema de Filtrado Inteligente (6 reglas):**
+```
+2025-09-22 02:33:37,990 - vpew_ai.utils.event_filter - INFO - Added filter rule: block_system_noise
+2025-09-22 02:33:37,990 - vpew_ai.utils.event_filter - INFO - Added filter rule: prioritize_security_events
+2025-09-22 02:33:37,990 - vpew_ai.utils.event_filter - INFO - Added filter rule: prioritize_admin_activities
+2025-09-22 02:33:37,990 - vpew_ai.utils.event_filter - INFO - Added filter rule: prioritize_suspicious_processes
+2025-09-22 02:33:37,990 - vpew_ai.utils.event_filter - INFO - Added filter rule: prioritize_network_activities
+2025-09-22 02:33:37,990 - vpew_ai.utils.event_filter - INFO - Added filter rule: block_duplicate_events
+```
+
+**✅ 2. Priorización de Alertas:**
+```
+2025-09-22 02:33:37,990 - vpew_ai.utils.alert_prioritizer - INFO - Initialized risk profiles: 5 users, 8 processes, 2 IPs
+2025-09-22 02:33:37,990 - vpew_ai.utils.alert_prioritizer - INFO - Alert prioritization system initialized
+```
+
+**✅ 3. Sistema de Backup:**
+```
+2025-09-22 02:33:37,990 - vpew_ai.utils.backup_recovery - INFO - Loaded 3 backup records
+2025-09-22 02:33:37,990 - vpew_ai.utils.backup_recovery - INFO - Backup and recovery system initialized
+```
+
+**✅ 4. API de Monitoreo:**
+```
+2025-09-22 02:33:37,990 - vpew_ai.utils.health_api - INFO - Health API Server initialized on localhost:8080
+2025-09-22 02:33:37,990 - vpew_ai.utils.health_api - INFO - Available endpoints:
+2025-09-22 02:33:37,990 - vpew_ai.utils.health_api - INFO -   GET /health - Basic health check
+2025-09-22 02:33:37,990 - vpew_ai.utils.health_api - INFO -   GET /health/detailed - Detailed health information
+2025-09-22 02:33:37,990 - vpew_ai.utils.health_api - INFO -   GET /health/metrics - System and application metrics
+2025-09-22 02:33:37,990 - vpew_ai.utils.health_api - INFO -   GET /health/status - Agent status information
+2025-09-22 02:33:37,990 - vpew_ai.utils.health_api - INFO -   GET /health/backup - Backup system status
+```
+
+**✅ 5. Validación Legal/Ética:**
+```
+2025-09-22 02:33:38,001 - vpew_ai.sensor.agent - INFO - Legal/ethical validation completed successfully
+2025-09-22 02:33:38,001 - vpew_ai.sensor.agent - INFO - System authorized for DEFENSIVE USE ONLY
+```
+
+**✅ 6. Colectores de Eventos (3 tipos):**
+```
+2025-09-22 02:33:38,028 - vpew_ai.sensor.collectors.event_collector - INFO - Event Log collector initialized
+2025-09-22 02:33:38,030 - vpew_ai.sensor.collectors.sysmon_collector - INFO - Sysmon collector initialized
+2025-09-22 02:33:38,032 - vpew_ai.sensor.collectors.etw_collector - INFO - ETW collector initialized
+2025-09-22 02:33:38,032 - vpew_ai.sensor.agent - INFO - Initialized 3 collectors
+```
+
+**✅ 7. Modelos de Machine Learning:**
+```
+2025-09-22 02:33:38,051 - vpew_ai.ml.simple_models - INFO - Model loaded from models\anomaly_detector.joblib
+2025-09-22 02:33:38,069 - vpew_ai.ml.simple_models - INFO - Model loaded from models\threat_classifier.joblib
+```
+
+**✅ 8. Motor de Reglas Sigma:**
+```
+2025-09-22 02:33:38,076 - vpew_ai.rules.sigma_engine - INFO - Loaded 5 Sigma rules
+```
+
+**✅ 9. Monitoreo de Salud:**
+```
+2025-09-22 02:33:38,081 - vpew_ai.utils.health_monitor - INFO - Health monitoring started with 30s interval
+```
+
 ### 🎛️ Interfaz Gráfica (GUI)
 
 #### Ejecutar GUI
@@ -109,25 +195,6 @@ python vpew_gui.py
 * **🔍 Monitoreo en Vivo**: Control de monitoreo en tiempo real
 * **🚨 Alertas**: Visualización de amenazas detectadas
 * **⚙️ Configuración**: Ajustes del sistema
-
-### 💻 Agente Principal Optimizado
-
-#### Ejecutar Agente con Todas las Mejoras
-
-```bash
-# Ejecutar agente completo con todas las mejoras
-python run_agent.py C:\ProgramData\vpew-ai\config.json
-
-# Características incluidas:
-# ✅ Logging estructurado
-# ✅ Configuración dinámica
-# ✅ Métricas de rendimiento
-# ✅ Health monitoring
-# ✅ Event filtering
-# ✅ Alert prioritization
-# ✅ Backup automático
-# ✅ API de monitoreo
-```
 
 ### 🔧 Configuración del Sistema
 
@@ -165,6 +232,38 @@ Ubicación: `C:\ProgramData\vpew-ai\config.json`
 }
 ```
 
+### 🔄 Monitoreo en Tiempo Real
+
+#### Estado Operacional del Agente
+
+Una vez inicializado, el agente entra en modo de monitoreo continuo:
+
+```
+2025-09-22 02:33:38,089 - vpew_ai.sensor.agent - INFO - Starting event collection loop...
+```
+
+#### Alertas de Salud del Sistema
+
+El agente monitorea continuamente la salud del sistema y reporta alertas:
+
+```
+2025-09-22 02:33:39,081 - vpew_ai.utils.health_monitor - WARNING - Health status: critical
+2025-09-22 02:33:39,081 - vpew_ai.utils.health_monitor - WARNING - Health check 'memory_usage': High memory usage: 84.6%
+2025-09-22 02:33:39,081 - vpew_ai.utils.health_monitor - WARNING - Health check 'disk_space': Critical disk space: 94.7% (24.6GB free)
+```
+
+#### Detención Graceful del Agente
+
+Para detener el agente de forma segura, usa `Ctrl+C`:
+
+```
+2025-09-22 02:35:03,332 - vpew_ai.sensor.agent - INFO - Received signal 2, shutting down...
+2025-09-22 02:35:03,332 - vpew_ai.sensor.agent - INFO - Stopping VPEW-AI Agent...
+2025-09-22 02:35:03,333 - vpew_ai.utils.health_monitor - INFO - Health monitoring stopped
+2025-09-22 02:35:04,338 - vpew_ai.sensor.agent - INFO - Stopped dynamic configuration watching
+2025-09-22 02:35:04,356 - vpew_ai.utils.health_api - INFO - Health API server stopped
+```
+
 ### 🌐 API de Monitoreo
 
 #### Endpoints Disponibles
@@ -192,14 +291,20 @@ GET /health/backup
 
 ```bash
 # Verificar estado del agente
-curl http://localhost:8080/health
+Invoke-WebRequest -Uri http://localhost:8080/health -UseBasicParsing
 
 # Obtener métricas detalladas
-curl http://localhost:8080/health/metrics
+Invoke-WebRequest -Uri http://localhost:8080/health/metrics -UseBasicParsing
 
 # Verificar estado de backups
-curl http://localhost:8080/health/backup
+Invoke-WebRequest -Uri http://localhost:8080/health/backup -UseBasicParsing
 ```
+
+#### Estados de la API
+
+- **✅ API Activa**: `http://localhost:8080` disponible
+- **⚠️ API con Errores**: Error 500 en algunos endpoints
+- **❌ API Inactiva**: Conexión rechazada
 
 ### 🔄 Configuración Dinámica
 
@@ -328,36 +433,102 @@ WARNING - Health check 'disk_space': Critical disk space: 94.7% (24.7GB free)
 
 ### 🛠️ Troubleshooting Avanzado
 
-#### Problemas Comunes y Soluciones
+#### ❌ Errores Comunes y Soluciones
 
-**❌ Error: "Health API server not starting"**
-```bash
+**1. Error de Health Monitor**
+```
+ERROR - Error in health check: 'SimpleAnomalyDetector' object has no attribute 'is_loaded'
+```
+**Solución**:
+```python
+# Verificar si el modelo está cargado
+if hasattr(agent.anomaly_detector, 'model'):
+    status = "loaded" if agent.anomaly_detector.model else "not_loaded"
+```
+
+**2. Error de Backup System**
+```
+ERROR - Error in selective backup: [WinError 2] El sistema no puede encontrar el archivo especificado
+```
+**Solución**:
+```powershell
+# Crear directorios de backup
+mkdir C:\ProgramData\vpew-ai\backups\config -Force
+mkdir C:\ProgramData\vpew-ai\backups\models -Force
+
+# Verificar permisos
+icacls C:\ProgramData\vpew-ai\backups /grant Everyone:F
+```
+
+**3. Error de Health API**
+```
+ERROR - Error in health check: API endpoint returning 500
+```
+**Solución**:
+```powershell
 # Verificar puerto disponible
 netstat -an | findstr :8080
 
-# Cambiar puerto en configuración
-# "health_api": {"port": 8081}
+# Cambiar puerto si está ocupado
+# Editar config.json: "health_api": {"port": 8081}
 ```
 
-**❌ Error: "Backup system not available"**
+**4. Warning de Contenido Defensivo**
+```
+WARNING - Potential DEFENSIVE content validation
+```
+**Solución**: Este es un warning normal del sistema de validación legal/ética. No requiere acción.
+
+**5. Error de ML Models**
+```
+ERROR - The feature names should match those that were passed during fit
+```
+**Solución**:
 ```bash
-# Verificar permisos de escritura
-# Ejecutar como administrador
+# Verificar modelos
+python check_model_features.py
+
+# Regenerar modelos si es necesario
+python train_models.py
 ```
 
-**❌ Error: "Dynamic config not loading"**
-```bash
-# Verificar sintaxis JSON
-python -m json.tool C:\ProgramData\vpew-ai\config.json
+**6. Error de ETW Collector**
+```
+ERROR - ULONG64 is not defined
+```
+**Solución**: Ya corregido en la versión actual del código.
+
+#### 🔍 Diagnóstico del Sistema
+
+**Verificar Estado de Componentes**:
+```powershell
+# Verificar logs del agente
+Get-Content C:\ProgramData\vpew-ai\logs\vpew-agent.log -Tail 50
+
+# Verificar estado de la API
+Invoke-WebRequest -Uri http://localhost:8080/health -UseBasicParsing
+
+# Verificar métricas
+Invoke-WebRequest -Uri http://localhost:8080/health/metrics -UseBasicParsing
 ```
 
-**❌ Error: "ML models not loading"**
-```bash
-# Verificar modelos entrenados
-ls C:\ProgramData\vpew-ai\models\
+**Verificar Sistema de Backup**:
+```powershell
+# Verificar directorio de backups
+Get-ChildItem C:\ProgramData\vpew-ai\backups -Recurse
 
-# Reentrenar modelos si es necesario
-python vpew_real.py
+# Verificar metadata de backups
+Get-Content C:\ProgramData\vpew-ai\backups\backup_info.json | ConvertFrom-Json
+```
+
+**Verificar API de Monitoreo**:
+```powershell
+# Verificar que la API esté corriendo
+Test-NetConnection -ComputerName localhost -Port 8080
+
+# Probar endpoints específicos
+Invoke-WebRequest -Uri http://localhost:8080/health/status -UseBasicParsing
+Invoke-WebRequest -Uri http://localhost:8080/health/backup -UseBasicParsing
 ```
 
 ### 🔐 Seguridad y Cumplimiento
