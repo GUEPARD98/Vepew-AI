@@ -1,0 +1,45 @@
+title: Critical System Binary Modification
+id: vpew-r3-persistence
+description: Detects modification of critical system binaries indicating potential persistence mechanism
+status: experimental
+author: VPEW-AI Team
+date: 2024/01/01
+modified: 2024/01/01
+references:
+    - https://attack.mitre.org/techniques/T1543/003/
+    - https://attack.mitre.org/techniques/T1574/
+tags:
+    - attack.persistence
+    - attack.t1543.003
+    - attack.t1574
+logsource:
+    category: file_event
+    product: windows
+    service: sysmon
+detection:
+    selection_location:
+        EventID: 11
+        TargetFilename|contains:
+            - '\system32\'
+            - '\syswow64\'
+            - '\windows\system32\'
+            - '\windows\syswow64\'
+    selection_extension:
+        TargetFilename|endswith:
+            - '.exe'
+            - '.dll'
+            - '.sys'
+            - '.scr'
+    filter_legitimate:
+        Image|contains:
+            - '\Windows\System32\'
+            - '\Windows\SysWOW64\'
+            - '\Program Files\'
+            - '\Program Files (x86)\'
+        ProcessId: 4  # System process
+    condition: selection_location and selection_extension and not filter_legitimate
+level: high
+falsepositives:
+    - Windows updates
+    - Software installations by legitimate installers
+    - System maintenance operations

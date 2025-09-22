@@ -1,0 +1,30 @@
+title: Mass Authentication Against Disabled Accounts
+id: vpew-r5-defense-evasion
+description: Detects brute force attacks against disabled user accounts
+status: experimental
+author: VPEW-AI Team
+date: 2024/01/01
+modified: 2024/01/01
+references:
+    - https://attack.mitre.org/techniques/T1110/
+    - https://attack.mitre.org/techniques/T1078/
+tags:
+    - attack.credential_access
+    - attack.t1110
+    - attack.t1078
+logsource:
+    category: authentication
+    product: windows
+    service: security
+detection:
+    selection:
+        EventID: 4625
+        Status: '0xC0000072'  # Account disabled
+        SubStatus: '0xC0000072'
+    timeframe: 300s
+    condition: selection | count() > 10
+level: high
+falsepositives:
+    - Service accounts with disabled status
+    - Automated systems with outdated credentials
+    - Legitimate password recovery attempts
