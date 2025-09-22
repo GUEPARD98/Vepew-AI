@@ -312,9 +312,22 @@ class VPEWRealAgent:
                 import pandas as pd
                 features_df = pd.DataFrame([features], columns=[f'feature_{i}' for i in range(25)])
                 
-                # Anomaly detection
-                anomaly_predictions = self.anomaly_detector.predict(features_df)
-                anomaly_score = float(anomaly_predictions[0]) if len(anomaly_predictions) > 0 else 0.0
+                # Anomaly detection with continuous score
+                try:
+                    # Try to get continuous anomaly score
+                    if hasattr(self.anomaly_detector, 'score_samples'):
+                        anomaly_scores = self.anomaly_detector.score_samples(features_df)
+                        anomaly_score = float(anomaly_scores[0]) if len(anomaly_scores) > 0 else 0.0
+                        # Normalize to 0-1 range (higher = more anomalous)
+                        anomaly_score = max(0.0, min(1.0, (anomaly_score + 0.5)))
+                    else:
+                        # Fallback to binary prediction
+                        anomaly_predictions = self.anomaly_detector.predict(features_df)
+                        anomaly_score = float(anomaly_predictions[0]) if len(anomaly_predictions) > 0 else 0.0
+                except Exception as e:
+                    # Fallback to binary prediction if continuous score fails
+                    anomaly_predictions = self.anomaly_detector.predict(features_df)
+                    anomaly_score = float(anomaly_predictions[0]) if len(anomaly_predictions) > 0 else 0.0
                 
                 # Threat classification
                 threat_predictions = self.threat_classifier.predict(features_df)
@@ -347,9 +360,9 @@ class VPEWRealAgent:
                     threats_found.append(f"ML: Alta anomalía detectada (score: {anomaly_score:.3f})")
                     risk_score += anomaly_score * 0.8
                 
-                if threat_result['class'] != 'BENIGN' and threat_result['confidence'] > 0.5:
-                    threats_found.append(f"ML: Amenaza clasificada como {threat_result['class']} (confianza: {threat_result['confidence']:.3f})")
-                    risk_score += threat_result['confidence'] * 0.9
+                if ml_results['threat_class'] != 'normal' and ml_results['threat_confidence'] > 0.5:
+                    threats_found.append(f"ML: Amenaza clasificada como {ml_results['threat_class']} (confianza: {ml_results['threat_confidence']:.3f})")
+                    risk_score += ml_results['threat_confidence'] * 0.9
                 
                 self.stats['ml_predictions'] += 1
                 
@@ -401,9 +414,22 @@ class VPEWRealAgent:
             threats_found.append(f"REGLA: Indicadores de evasión de defensas: {', '.join(evasion_found)}")
             risk_score += min(0.6, len(evasion_found) * 0.2)
         
-        # 7. ANÁLISIS DE UBICACIÓN
-        process_path = process_data.get('cmdline', '')
-        if any(loc in process_path.lower() for loc in self.threat_indicators['suspicious_locations']):
+        # 7. ANÁLISIS DE UBICACIÓN (mejorado para reducir falsos positivos)
+        process_path = process_data.get('cmdline', '').lower()
+        
+        # Check for suspicious locations with context
+        suspicious_context = False
+        if 'system32' in process_path or 'syswow64' in process_path:
+            # Only flag if it's a non-system process or has suspicious parameters
+            if (name not in ['svchost.exe', 'dllhost.exe', 'rundll32.exe', 'regsvr32.exe'] or 
+                any(susp in process_path for susp in ['-enc', '-e ', 'comsvcs', 'mimikatz'])):
+                suspicious_context = True
+        elif any(loc in process_path for loc in ['temp', 'appdata', 'public', 'downloads', 'programdata']):
+            # These are always suspicious for non-browser processes
+            if not any(browser in name for browser in ['chrome', 'firefox', 'edge', 'iexplore']):
+                suspicious_context = True
+        
+        if suspicious_context:
             threats_found.append("REGLA: Proceso ejecutándose desde ubicación sospechosa")
             risk_score += 0.4
         
@@ -442,7 +468,13 @@ class VPEWRealAgent:
                 risk_score += 0.3
         except:
             # Fallback to string matching if ipaddress fails
-            if not remote_ip.startswith(('192.168.', '10.', '172.', '127.', '169.254.')):
+            # Corrected: 172.16. to 172.31. for private range (172.0.0.0/8 includes public IPs)
+            is_private = (
+                remote_ip.startswith(('192.168.', '10.', '127.', '169.254.')) or
+                (remote_ip.startswith('172.') and 
+                 any(remote_ip.startswith(f'172.{i}.') for i in range(16, 32)))
+            )
+            if not is_private:
                 threats_found.append(f"Conexión a IP externa: {remote_ip}")
                 risk_score += 0.3
         
